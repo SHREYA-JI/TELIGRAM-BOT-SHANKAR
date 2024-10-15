@@ -12,7 +12,7 @@ module.exports = {
         version: '1.0.0',
         author: 'Samir Thakuri',
         description: 'Convert provided HTML into an image',
-        usage: 'html2img <HTML>'
+        usage: 'html2img <HTML>',
     },
 
     onStart: async function({ msg, bot, args }) {

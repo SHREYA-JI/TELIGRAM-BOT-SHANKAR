@@ -11,6 +11,7 @@ module.exports = {
         category: "ai",
         description: "Get AI-generated responses using Meta AI API",
         usage: "meta <query>",
+        
     },
 
     onStart: async function ({ bot, msg, args }) {

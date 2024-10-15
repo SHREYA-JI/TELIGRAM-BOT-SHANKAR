@@ -11,7 +11,7 @@ module.exports = {
         version: '1.0.0',
         author: 'Samir Thakuri',
         description: 'Get a list of all available commands or detailed information about a specific command',
-        usage: 'help [command|page]'
+        usage: 'help [command|page]',
     },
 
     onStart: async function({ msg, bot, args, config, threadModel }) {

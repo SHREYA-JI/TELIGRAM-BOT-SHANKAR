@@ -9,7 +9,7 @@ module.exports = {
         version: '1.0.0',
         author: 'Samir Thakuri',
         description: 'Random Jav Image',
-        usage: 'jav'
+        usage: 'jav',
     },
 
     onStart: async function({ msg, bot }) {

@@ -17,3 +17,5 @@ tes*.js
 test.txt
 eng.traineddata
 config.json
+
+.env

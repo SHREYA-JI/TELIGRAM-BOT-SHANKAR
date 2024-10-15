@@ -1,82 +1,70 @@
-const axios = require('axios');
-const FormData = require('form-data');
-const imgbbApiKey = 'e6a573af64fc40a0b618acccd6677b74'; // Replace with your ImgBB API key
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI("AIzaSyDbmvQvBvL7IZCqKQ63R8hwN5UtFFVmK64");
 
+// Object to store each user's chat session history
+const userSessions = {};
+
+// List of keywords or phrases for resetting the chat
+const resetKeywords = [
+    "reset", "clear", "new session", "start over", "restart", "clear chat",
+    "reset chat", "start fresh", "delete history", "clear history",
+    "erase chat", "begin new", "wipe chat", "reboot", "refresh"
+];
 
 module.exports = {
     config: {
         name: "gemini",
-        alias: ["bard"],
-        category: "ai",
-        role: 0,
+        aliases: ["geminichat", "bard"],
+        role: 0, // All users can use this command
         cooldowns: 5,
         version: '1.0.0',
         author: 'Samir Thakuri',
-        description: "Get AI-generated responses using Gemini API",
-        usage: "gemini <query>",
+        category: "tools",
+        description: "Start an interactive chat session with Gemini AI. Use 'reset' to clear chat history.",
+        usage: "/gemini <text>",
     },
 
-    onStart: async function ({ bot, msg, args, config, userId }) {
+    onStart: async function ({ bot, chatId, msg, args }) {
         try {
-            const { chat } = msg;
+            const userId = msg.from.id;
+            const prompt = args.join(' ').toLowerCase();
 
-            if (!args.length && !msg.reply_to_message) {
-                await bot.sendMessage(chat.id, "Please provide a query or reply to a message/image.",  { replyToMessage: msg.message_id });
-                return;
+            // Check if the prompt contains any of the reset keywords
+            if (resetKeywords.some(keyword => prompt.includes(keyword))) {
+                userSessions[userId] = { history: [] }; // Clear chat history
+                return bot.sendMessage(chatId, "🧹 Chat history cleared! Let's start fresh.", { replyToMessage: msg.message_id });
             }
 
-            let query;
-            let response;
-
-            if (msg.reply_to_message && msg.reply_to_message.photo) {
-                // Extract the image URL from the reply
-                const fileId = msg.reply_to_message.photo[0].file_id;
-                const file = await bot.getFile(fileId);
-                const fileUrl = `https://api.telegram.org/file/bot${config.botToken}/${file.file_path}`;
-
-                const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
-
-                const formData = new FormData();
-                formData.append('image', Buffer.from(response.data, 'binary'), { filename: 'image.png' });
-
-                const imgbbResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
-                    headers: {
-                        ...formData.getHeaders(),
-                    },
-                    params: {
-                        key: imgbbApiKey,
-                    },
-                });
-
-                const imageUrl = imgbbResponse.data.data.url;
-
-                query = args.join(" ");
-                const apiUrl = `https://apibysamir.onrender.com/geminiv2?prompt=${encodeURIComponent(query)}&imgUrl=${encodeURIComponent(imageUrl)}&apikey=APIKEY`;
-
-                response = await axios.get(apiUrl);
-            } else if (msg.reply_to_message && msg.reply_to_message.text) {
-                query = msg.reply_to_message.text;
-
-                const apiUrl = `https://apibysamir.onrender.com/gemini?query=${encodeURIComponent(query)}&chatid=${userId}&apikey=APIKEY`;
-
-                response = await axios.get(apiUrl);
-            } else {
-                query = args.join(" ");
-
-                const apiUrl = `https://apibysamir.onrender.com/gemini?query=${encodeURIComponent(query)}&chatid=${userId}&apikey=APIKEY`;
-
-                response = await axios.get(apiUrl);
+            if (!prompt) {
+                return bot.sendMessage(chatId, "Uh... what do you want to say? 🤔", { replyToMessage: msg.message_id });
             }
 
-            if (response.data && response.data.response) {
-                await bot.sendMessage(chat.id, response.data.response,  { replyToMessage: msg.message_id });
-            } else {
-                await bot.sendMessage(chat.id, "No response from Gemini API.",  { replyToMessage: msg.message_id });
+            // Initialize the chat session if it doesn’t exist for the user
+            if (!userSessions[userId]) {
+                userSessions[userId] = {
+                    chat: genAI.getGenerativeModel({ model: "gemini-1.5-flash" }).startChat({
+                        history: [
+                            { role: "user", parts: [{ text: "Hello" }] },
+                            { role: "model", parts: [{ text: "Great to meet you. What would you like to know?" }] },
+                        ],
+                    })
+                };
             }
 
+            const chat = userSessions[userId].chat;
+
+            // Send a pre-message while processing the AI's response
+            const preMessage = await bot.sendMessage(chatId, "🤖 Thinking...", { replyToMessage: msg.message_id });
+
+            // Send the message to the user's chat session
+            const result = await chat.sendMessage(prompt);
+            const responseText = result.response.text();
+
+            // Edit the pre-message with the AI's actual response
+            await bot.editMessageText({ chatId: preMessage.chat.id, messageId: preMessage.message_id }, responseText);
         } catch (error) {
-            console.error('Error fetching Gemini response:', error);
-            await bot.sendMessage(msg.chat.id, "Error fetching Gemini response.",  { replyToMessage: msg.message_id });
+            console.error("Gemini AI Error:", error);
+            await bot.editMessageText({ chatId: preMessage.chat.id, messageId: preMessage.message_id }, "Oops! Something went wrong. We're working on fixing it ASAP.");
         }
-    },
+    }
 };

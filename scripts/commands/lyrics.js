@@ -10,7 +10,7 @@ module.exports = {
         version: '1.0.0',
         author: 'Samir Thakuri',
         description: 'Get lyrics of a song.',
-        usage: 'lyrics <song name>'
+        usage: 'lyrics <song name>',
     },
 
     onStart: async function({ msg, bot, args, chatId }) {

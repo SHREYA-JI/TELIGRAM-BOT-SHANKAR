@@ -10,7 +10,7 @@ module.exports = {
         version: '1.0.0',
         author: 'Samir Thakuri',
         description: 'Download video from Pinterest',
-        usage: 'pindl <URL>'
+        usage: 'pindl <URL>',
     },
 
     onStart: async function({ msg, bot, args }) {

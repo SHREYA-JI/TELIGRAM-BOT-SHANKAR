@@ -10,7 +10,7 @@ module.exports = {
         author: 'Samir Thakuri',
         category: "utility",
         description: "Clone a public GitHub repository and send it as a .zip file along with repository data",
-        usage: "gitclone <GitHub_Repository_URL>"
+        usage: "gitclone <GitHub_Repository_URL>",
     },
 
     onStart: async function ({ bot, args, chatId, msg }) {

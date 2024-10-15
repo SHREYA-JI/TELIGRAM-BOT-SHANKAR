@@ -1,6 +1,6 @@
 {
-  "botToken": "Bot_Token",
-  "mongoURI": "MOngoDB_URI",
+  "botToken": "6984014693:AAEtTI0RGNqoXPbhymtFbHe7SblQvb_Lp1Q",
+  "mongoURI": "mongodb+srv://itssamir444:XKLWXz7zfqv8p0vv@telebot.7s6rdvv.mongodb.net/?retryWrites=true&w=majority&appName=telebot",
   "note": "Make sure to add your bot token and mongoURI from MongoDB and also respect author for their hardwork for this project by not changing code unnecessarily.",
   "prefix": "/",
   "adminId": [
