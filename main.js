@@ -1,4 +1,4 @@
-const TeleBot = require('telebot');
+const TeleBot = require('./telebot/lib/telebot');
 const config = require('./config.json');
 const connectDB = require('./database/connectDB');
 const fs = require('fs');
